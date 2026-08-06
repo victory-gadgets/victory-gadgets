@@ -1,10 +1,10 @@
 # Victory Gadgets storefront
 
-A lightweight, mobile-first catalog for GitHub Pages. Customers can search and filter current inventory, switch between NGN and CAD, open product details, and send a pre-filled WhatsApp inquiry.
+A lightweight, mobile-first catalog for GitHub Pages. Customers can choose Nigeria, Canada, or the United States, then browse only that market's inventory, images, availability, and NGN/CAD/USD pricing. Their location choice is remembered on their device and included in every WhatsApp inquiry.
 
 ## Update products
 
-Edit `app/inventory.ts`. Each product includes its name, category, condition, availability, prices, image, description, and features. Push the change to `main`; GitHub Actions republishes the storefront automatically.
+Edit `app/inventory.ts`. Each row represents one physical listing in one market and includes its location, local price, photos, condition, availability, description, and features. To clone an item across markets, duplicate the row and change its market, SKU, price, and photos. Push the change to `main`; GitHub Actions republishes automatically.
 
 ## Publish
 
@@ -13,4 +13,4 @@ Edit `app/inventory.ts`. Each product includes its name, category, condition, av
 3. Set **Source** to **GitHub Actions**.
 4. Push any change or run the deployment workflow manually.
 
-The first release is intentionally catalog-only. GitHub Pages cannot securely host a password-protected inventory backend. A later phase can connect this same storefront to a hosted CMS or database without redesigning the customer experience.
+The location selector uses a soft browser-locale default and lets the customer switch at any time; it does not use IP tracking. The first release remains catalog-only because GitHub Pages cannot securely host a password-protected inventory backend. A later phase can connect this storefront to a hosted CMS, authentication service, and image storage without redesigning the customer experience.
