@@ -50,9 +50,11 @@ The first deployment asks for an available `*.sanity.studio` hostname. Studio ac
 In Sanity Manage, open **API → CORS origins** and add:
 
 - `http://localhost:4173` for the local storefront preview, without credentials.
-- `https://victory-gadgets.github.io` for the GitHub Pages storefront, without credentials.
+- `https://myvictorygadget.com` for the production storefront, without credentials.
+- `https://www.myvictorygadget.com` for the `www` alias, without credentials.
+- `https://victory-gadgets.github.io` for the GitHub Pages fallback URL, without credentials.
 
-Add the origin only, not the `/victory-gadgets/` path. If the final site moves to a custom domain, add that origin too.
+Add origins only, without paths or trailing slashes.
 
 ## Content model
 
