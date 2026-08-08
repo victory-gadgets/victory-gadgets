@@ -2,15 +2,17 @@
 
 A lightweight, mobile-first catalog for GitHub Pages. Customers can choose Nigeria, Canada, or the United States, then browse only that market's inventory, images, availability, and NGN/CAD/USD pricing. Their location choice is remembered on their device and included in every WhatsApp inquiry.
 
+- Storefront: [victory-gadgets.github.io/victory-gadgets](https://victory-gadgets.github.io/victory-gadgets/)
+- Inventory admin: [victory-gadgets-admin.sanity.studio](https://victory-gadgets-admin.sanity.studio/)
+
 ## Update products
 
-Edit `app/inventory.ts`. Each row represents one physical listing in one market and includes its location, local price, photos, condition, availability, description, and features. To clone an item across markets, duplicate the row and change its market, SKU, price, and photos. Push the change to `main`; GitHub Actions republishes automatically.
+The secure Sanity Studio is the primary inventory manager. Each entry represents one physical listing in one market and includes its location, local price, photos, condition, availability, description, and features. Published Studio changes appear on the storefront without a GitHub deployment.
+
+`app/inventory.ts` remains a read-only fallback so the public catalog stays available if the content service is temporarily unreachable.
 
 ## Publish
 
-1. Create a GitHub repository and push this project to its `main` branch.
-2. In the repository, open **Settings → Pages**.
-3. Set **Source** to **GitHub Actions**.
-4. Push any change or run the deployment workflow manually.
+The `main` branch deploys through GitHub Actions to GitHub Pages. The repository variable `SANITY_PROJECT_ID` supplies the public Sanity project ID during the build. Push a change or run the deployment workflow manually to publish a new storefront build.
 
-The location selector uses a soft browser-locale default and lets the customer switch at any time; it does not use IP tracking. The first release remains catalog-only because GitHub Pages cannot securely host a password-protected inventory backend. A later phase can connect this storefront to a hosted CMS, authentication service, and image storage without redesigning the customer experience.
+The location selector uses a soft browser-locale default and lets the customer switch at any time; it does not use IP tracking. Sanity handles secure member authentication, product drafts, publishing, and image storage; no privileged Sanity token is included in the public website.

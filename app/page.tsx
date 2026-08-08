@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { markets, products, type Market, type Product } from "./inventory";
+import { markets, products as fallbackProducts, type Currency, type Market, type Product } from "./inventory";
+import { fetchSanityProducts } from "./sanity";
 
 const conditions = ["All", "New", "Used", "Refurbished"];
 const marketCodes = Object.keys(markets) as Market[];
@@ -12,9 +13,11 @@ const priceBands: Record<Market, { label: string; value: number }[]> = {
   US: [{ label: "Under $100 USD", value: 100 }, { label: "Under $300 USD", value: 300 }, { label: "Under $700 USD", value: 700 }],
 };
 
-function money(value: number, market: Market) {
+function money(value: number, market: Market, currencyOverride?: Currency) {
   const details = markets[market];
-  return new Intl.NumberFormat(details.locale, { style: "currency", currency: details.currency, maximumFractionDigits: 0 }).format(value);
+  const currency = currencyOverride || details.currency;
+  const locale = currency === "NGN" ? "en-NG" : currency === "CAD" ? "en-CA" : "en-US";
+  return new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
 }
 
 function StatusBadge({ status }: { status: Product["status"] }) {
@@ -31,6 +34,7 @@ function detectedMarket(): Market {
 
 export default function Home() {
   const [market, setMarket] = useState<Market>("NG");
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>(fallbackProducts);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [condition, setCondition] = useState("All");
@@ -39,7 +43,13 @@ export default function Home() {
   const [activeImage, setActiveImage] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => { setMarket(detectedMarket()); }, []);
+  useEffect(() => {
+    const marketTimer = window.setTimeout(() => setMarket(detectedMarket()), 0);
+    void fetchSanityProducts().then((remoteProducts) => {
+      if (remoteProducts !== null) setCatalogProducts(remoteProducts);
+    });
+    return () => window.clearTimeout(marketTimer);
+  }, []);
   useEffect(() => {
     if (!selected) return;
     const close = (event: KeyboardEvent) => { if (event.key === "Escape") setSelected(null); };
@@ -49,7 +59,7 @@ export default function Home() {
   }, [selected]);
 
   const currentMarket = markets[market];
-  const marketProducts = useMemo(() => products.filter((product) => product.market === market), [market]);
+  const marketProducts = useMemo(() => catalogProducts.filter((product) => product.market === market), [catalogProducts, market]);
   const categories = useMemo(() => ["All", ...Array.from(new Set(marketProducts.map((product) => product.category)))], [marketProducts]);
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -110,7 +120,7 @@ export default function Home() {
         </div>
         <p className="result-count">{filtered.length} {filtered.length === 1 ? "item" : "items"} in {currentMarket.name}</p>
         <div className="product-grid">
-          {filtered.map((product) => <article className={`product-card ${product.status !== "In stock" ? "muted" : ""}`} key={product.id}><button className="product-image" onClick={() => openProduct(product)} aria-label={`View ${product.name}`}><img src={product.images[0]} alt={product.name} loading="lazy" /><StatusBadge status={product.status} />{product.images.length > 1 && <span className="photo-count" aria-label={`${product.images.length} photos`}>{product.images.length} photos</span>}</button><div className="product-info"><p className="product-meta">{product.category} · {product.condition}</p><h3>{product.name}</h3><div className="product-bottom"><strong>{money(product.price, market)}</strong><button onClick={() => openProduct(product)} aria-label={`View details for ${product.name}`}>View <span>↗</span></button></div></div></article>)}
+          {filtered.map((product) => <article className={`product-card ${product.status !== "In stock" ? "muted" : ""}`} key={product.id}><button className="product-image" onClick={() => openProduct(product)} aria-label={`View ${product.name}`}><img src={product.images[0]} alt={product.imageAlts?.[0] || product.name} loading="lazy" /><StatusBadge status={product.status} />{product.images.length > 1 && <span className="photo-count" aria-label={`${product.images.length} photos`}>{product.images.length} photos</span>}</button><div className="product-info"><p className="product-meta">{product.category} · {product.condition}</p><h3>{product.name}</h3><div className="product-bottom"><strong>{money(product.price, market, product.currency)}</strong><button onClick={() => openProduct(product)} aria-label={`View details for ${product.name}`}>View <span>↗</span></button></div></div></article>)}
         </div>
         {filtered.length === 0 && <div className="empty-state"><b>No exact matches in {currentMarket.name}.</b><p>Try another search, clear the filters, or switch markets.</p></div>}
       </section>
@@ -120,7 +130,7 @@ export default function Home() {
       <section className="contact-section" id="contact"><div><p className="eyebrow">SHOPPING IN {currentMarket.name.toUpperCase()}?</p><h2>Let’s find your next gadget.</h2></div><a className="primary-button light" href={contactHref} target="_blank" rel="noreferrer">Message on WhatsApp <span>↗</span></a></section>
       <footer><a className="brand" href="#top"><span className="brand-mark">V</span><span><b>VICTORY</b><small>GADGETS & ACCESSORIES</small></span></a><p>Nigeria · Canada · United States</p><p>© 2026 Victory Gadgets</p></footer>
 
-      {selected && <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelected(null)}><section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setSelected(null)} aria-label="Close product details">×</button><div className="modal-visual"><div className="modal-image"><img src={selected.images[activeImage]} alt={`${selected.name}, photo ${activeImage + 1}`} /><StatusBadge status={selected.status} /></div>{selected.images.length > 1 && <div className="thumbnail-row" aria-label="Product photos">{selected.images.map((image, index) => <button key={`${image}-${index}`} className={activeImage === index ? "active" : ""} onClick={() => setActiveImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={activeImage === index}><img src={image} alt="" /></button>)}</div>}</div><div className="modal-copy"><p className="product-meta">{markets[selected.market].flag} {markets[selected.market].name} · {selected.category} · {selected.condition} · {selected.sku}</p><h2 id="modal-title">{selected.name}</h2><p>{selected.description}</p><ul>{selected.features.map((feature) => <li key={feature}>{feature}</li>)}</ul><strong className="modal-price">{money(selected.price, selected.market)}</strong><button className="primary-button" disabled={selected.status === "Sold"} onClick={() => askAbout(selected)}>{selected.status === "Sold" ? "Currently sold" : "Ask about this item"}<span>↗</span></button></div></section></div>}
+      {selected && <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelected(null)}><section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setSelected(null)} aria-label="Close product details">×</button><div className="modal-visual"><div className="modal-image"><img src={selected.images[activeImage]} alt={selected.imageAlts?.[activeImage] || `${selected.name}, photo ${activeImage + 1}`} /><StatusBadge status={selected.status} /></div>{selected.images.length > 1 && <div className="thumbnail-row" aria-label="Product photos">{selected.images.map((image, index) => <button key={`${image}-${index}`} className={activeImage === index ? "active" : ""} onClick={() => setActiveImage(index)} aria-label={`Show photo ${index + 1}`} aria-pressed={activeImage === index}><img src={image} alt="" /></button>)}</div>}</div><div className="modal-copy"><p className="product-meta">{markets[selected.market].flag} {markets[selected.market].name} · {selected.category} · {selected.condition} · {selected.sku}</p><h2 id="modal-title">{selected.name}</h2><p>{selected.description}</p><ul>{selected.features.map((feature) => <li key={feature}>{feature}</li>)}</ul><strong className="modal-price">{money(selected.price, selected.market, selected.currency)}</strong><button className="primary-button" disabled={selected.status === "Sold"} onClick={() => askAbout(selected)}>{selected.status === "Sold" ? "Currently sold" : "Ask about this item"}<span>↗</span></button></div></section></div>}
     </main>
   );
 }

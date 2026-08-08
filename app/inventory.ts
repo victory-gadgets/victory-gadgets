@@ -16,7 +16,9 @@ export type Product = {
   condition: "New" | "Used" | "Refurbished";
   status: "In stock" | "Pending" | "Sold";
   price: number;
+  currency?: Currency;
   images: string[];
+  imageAlts?: string[];
   description: string;
   features: string[];
 };
