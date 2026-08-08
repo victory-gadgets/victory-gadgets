@@ -102,7 +102,7 @@ export default function Home() {
           </div>
           <p className="location-note"><span>●</span> Showing {currentMarket.name} inventory. Your choice is remembered on this device.</p>
         </div>
-        <div className="hero-art" aria-label="Victory Gadgets product showcase"><div className="hero-orbit hero-orbit-one" /><div className="hero-orbit hero-orbit-two" /><img src="brand-flyer.jpeg" alt="Laptops, phones, earbuds and smart watches from Victory Gadgets" /><div className="hero-note"><b>{currentMarket.flag} {currentMarket.name}</b><span>{marketProducts.length} local listings · {currentMarket.currency}</span></div></div>
+        <div className="hero-art" aria-label="Victory Gadgets product showcase"><div className="hero-orbit hero-orbit-one" /><div className="hero-orbit hero-orbit-two" /><img src="brand-flyer.jpeg" alt="Victory Gadgets flyer featuring earbuds, laptops, watches, televisions, printers and accessories" /><div className="hero-note"><b>{currentMarket.flag} {currentMarket.name}</b><span>{marketProducts.length} local listings · {currentMarket.currency}</span></div></div>
       </section>
 
       <section className="category-strip" aria-label={`${currentMarket.name} product categories`}>
