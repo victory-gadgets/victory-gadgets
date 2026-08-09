@@ -45,6 +45,9 @@ test("keeps market selection, filtering, galleries, and inquiries location-aware
   assert.match(page, /product\.price <= maxPrice/);
   assert.match(page, /selected\.images\[activeImage\]/);
   assert.match(page, /markets\[product\.market\]\.name} listing/);
+  assert.match(page, /const whatsappNumber = "14379898767"/);
+  assert.match(page, /https:\/\/wa\.me\/\$\{whatsappNumber\}\?text=/);
+  assert.doesNotMatch(page, /https:\/\/wa\.me\/\?text=/);
 
   for (const market of ["NG", "CA", "US"]) {
     assert.match(inventory, new RegExp(`market: "${market}"`));

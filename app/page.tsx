@@ -6,6 +6,11 @@ import { fetchSanityProducts } from "./sanity";
 
 const conditions = ["All", "New", "Used", "Refurbished"];
 const marketCodes = Object.keys(markets) as Market[];
+const whatsappNumber = "14379898767";
+
+function whatsappHref(message: string) {
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
 
 const priceBands: Record<Market, { label: string; value: number }[]> = {
   NG: [{ label: "Under ₦50,000", value: 50000 }, { label: "Under ₦100,000", value: 100000 }, { label: "Under ₦300,000", value: 300000 }],
@@ -78,10 +83,10 @@ export default function Home() {
   };
   const openProduct = (product: Product) => { setSelected(product); setActiveImage(0); };
   const askAbout = (product: Product) => {
-    const text = encodeURIComponent(`Hello Victory Gadgets, I’m interested in the ${product.name} (${product.sku}) — ${markets[product.market].name} listing. Is it still available?`);
-    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+    const message = `Hello Victory Gadgets, I’m interested in the ${product.name} (${product.sku}) — ${markets[product.market].name} listing. Is it still available?`;
+    window.open(whatsappHref(message), "_blank", "noopener,noreferrer");
   };
-  const contactHref = `https://wa.me/?text=${encodeURIComponent(`Hello Victory Gadgets, I’d like help finding a product in your ${currentMarket.name} inventory.`)}`;
+  const contactHref = whatsappHref(`Hello Victory Gadgets, I’d like help finding a product in your ${currentMarket.name} inventory.`);
 
   return (
     <main>
